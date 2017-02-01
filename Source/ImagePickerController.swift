@@ -125,7 +125,7 @@ open class ImagePickerController: UIViewController {
       ? ImageGalleryView.Dimensions.galleryBarHeight : GestureConstants.minimumHeight
 
     galleryView.collectionView.transform = CGAffineTransform.identity
-    galleryView.collectionView.contentInset = UIEdgeInsets.zero
+//    galleryView.collectionView.contentInset = UIEdgeInsets.zero
 
     galleryView.frame = CGRect(x: 0,
                                y: totalSize.height - bottomContainer.frame.height - galleryHeight,
@@ -261,7 +261,7 @@ open class ImagePickerController: UIViewController {
     UIView.animate(withDuration: 0.3, animations: {
       self.updateGalleryViewFrames(self.galleryView.topSeparator.frame.height)
       self.galleryView.collectionView.transform = CGAffineTransform.identity
-      self.galleryView.collectionView.contentInset = UIEdgeInsets.zero
+//      self.galleryView.collectionView.contentInset = UIEdgeInsets.zero
       }, completion: { _ in
         completion?()
     })
@@ -272,7 +272,7 @@ open class ImagePickerController: UIViewController {
     UIView.animate(withDuration: 0.3, animations: {
       self.updateGalleryViewFrames(GestureConstants.minimumHeight)
       self.galleryView.collectionView.transform = CGAffineTransform.identity
-      self.galleryView.collectionView.contentInset = UIEdgeInsets.zero
+//      self.galleryView.collectionView.contentInset = UIEdgeInsets.zero
     })
   }
 
@@ -285,8 +285,8 @@ open class ImagePickerController: UIViewController {
       let scale = (GestureConstants.maximumHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
       self.galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
 
-      let value = self.view.frame.width * (scale - 1) / scale
-      self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
+//      let value = self.view.frame.width * (scale - 1) / scale
+//      self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
     })
   }
 
@@ -477,7 +477,7 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
       galleryView.frame.size.height = initialFrame.height - translation.y
 
       let value = view.frame.width * (scale - 1) / scale
-      galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
+//      galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
     } else {
       galleryView.frame.origin.y = initialFrame.origin.y + translation.y
       galleryView.frame.size.height = initialFrame.height - translation.y
