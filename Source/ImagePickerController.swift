@@ -64,6 +64,62 @@ open class ImagePickerController: UIViewController {
 
     return view
     }()
+  
+  lazy var progressOverlayView: UIView = {  [unowned self] in
+    let contentHInset: CGFloat = 20
+    let contentVInset: CGFloat = 8
+    let progressIndicatorSize: CGFloat = 66
+    let indicatorToLabelOffset: CGFloat = 4
+    
+    let overlayView = UIView()
+    overlayView.frame = self.view.bounds
+    overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+    overlayView.isHidden = true
+    overlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    
+    let progressLabel = UILabel()
+    progressLabel.textColor = UIColor.white
+    progressLabel.text = Configuration.assetLoadingInProgressTitle
+    progressLabel.textAlignment = .center
+    progressLabel.sizeToFit()
+    
+    let progressIndicator = UIActivityIndicatorView()
+    progressIndicator.color = .white
+    progressIndicator.activityIndicatorViewStyle = .whiteLarge
+    progressIndicator.startAnimating()
+    
+    let progressConainer = UIView()
+    let containerWidth = max(progressIndicatorSize, progressLabel.bounds.width + CGFloat(contentHInset * 2))
+    let containerHeight = max(progressIndicatorSize, progressIndicatorSize + indicatorToLabelOffset + progressLabel.bounds.height + CGFloat(contentVInset * 2))
+    
+    progressConainer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    progressConainer.layer.cornerRadius = 8
+    progressConainer.clipsToBounds = true
+    progressConainer.bounds = CGRect(x: 0, y: 0, width: containerWidth, height: containerHeight)
+    progressConainer.center = overlayView.center
+    
+    progressIndicator.bounds = CGRect(x: 0, y: 0, width: progressIndicatorSize, height: progressIndicatorSize)
+    progressIndicator.center = CGPoint(x: progressConainer.bounds.width / 2, y: progressIndicator.bounds.height / 2)
+    
+    var progressLabelFrame = progressLabel.frame
+    progressLabelFrame.origin = CGPoint(x: contentHInset, y: progressIndicator.frame.maxY + indicatorToLabelOffset)
+    progressLabel.frame = progressLabelFrame
+    
+    let blurEffect = UIBlurEffect(style: .dark)
+    let blurEffectView = UIVisualEffectView(effect: blurEffect)
+    
+    blurEffectView.frame = progressConainer.bounds
+    blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    
+    progressConainer.addSubview(blurEffectView)
+    progressConainer.addSubview(progressIndicator)
+    progressConainer.addSubview(progressLabel)
+    progressConainer.addSubview(progressIndicator)
+    
+    overlayView.addSubview(progressConainer)
+    
+    return overlayView
+    }()
 
   var volume = AVAudioSession.sharedInstance().outputVolume
 
@@ -99,6 +155,8 @@ open class ImagePickerController: UIViewController {
 
     view.addSubview(volumeView)
     view.sendSubview(toBack: volumeView)
+    view.addSubview(progressOverlayView)
+    view.bringSubview(toFront: progressOverlayView)
 
     view.backgroundColor = UIColor.white
     view.backgroundColor = Configuration.mainColor
@@ -333,14 +391,21 @@ extension ImagePickerController: BottomContainerViewDelegate {
   }
 
   func doneButtonDidPress() {
-    var images: [UIImage]
-    if let preferredImageSize = preferredImageSize {
-      images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-    } else {
-      images = AssetManager.resolveAssets(stack.assets)
+    if stack.assets.isEmpty {
+      delegate?.doneButtonDidPress(self, images: [])
     }
-
-    delegate?.doneButtonDidPress(self, images: images)
+    
+    let imageSize = preferredImageSize ?? CGSize(width: 720, height: 1280)
+    AssetManager.resolveAssets(stack.assets, size: imageSize, isNetworkAccessAllowed: true, onBeginLoading: {[weak self] (asset) in
+      if let wself = self, wself.progressOverlayView.isHidden == true {
+        wself.progressOverlayView.isHidden = false
+      }
+    }) {[weak self] (loadedImages) in
+      if let wself = self {
+        wself.delegate?.doneButtonDidPress(wself, images: loadedImages)
+        wself.progressOverlayView.isHidden = true
+      }
+    }
   }
 
   func cancelButtonDidPress() {
