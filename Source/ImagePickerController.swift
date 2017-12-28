@@ -155,7 +155,7 @@ open class ImagePickerController: UIViewController {
 
     view.addSubview(volumeView)
     view.sendSubview(toBack: volumeView)
-    view.sendSubview(toBack: volumeView)
+    view.addSubview(progressOverlayView)
     view.bringSubview(toFront: progressOverlayView)
 
     view.backgroundColor = UIColor.white
