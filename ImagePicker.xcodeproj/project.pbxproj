@@ -275,6 +275,9 @@
 						DevelopmentTeam = QQJ8AA32HJ;
 						LastSwiftMigration = 0800;
 					};
+					D5DC59941C201BE1003BD79B = {
+						DevelopmentTeam = QQJ8AA32HJ;
+					};
 				};
 			};
 			buildConfigurationList = D5DC59851C201BE1003BD79B /* Build configuration list for PBXProject "ImagePicker" */;
@@ -282,6 +285,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = D5DC59811C201BE1003BD79B;
@@ -488,7 +492,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePicker;
 				PRODUCT_NAME = ImagePicker;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -508,7 +512,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePicker;
 				PRODUCT_NAME = ImagePicker;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

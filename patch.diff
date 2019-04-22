@@ -1,0 +1,715 @@
+From 36669c31e9a3a276ac6a77dac5ecdc3a31bde1f7 Mon Sep 17 00:00:00 2001
+From: Vladimir Tribushevsky <vladimir.tribushevsky@gmail.com>
+Date: Mon, 22 Apr 2019 15:14:18 +0300
+Subject: [PATCH] Swift 5 migration.
+
+---
+ ImagePicker.xcodeproj/project.pbxproj         |  8 +++--
+ Source/AssetManager.swift                     | 10 +++----
+ Source/BottomView/BottomContainerView.swift   | 10 +++----
+ Source/BottomView/ButtonPicker.swift          |  6 ++--
+ Source/BottomView/StackView.swift             |  4 +--
+ Source/CameraView/CameraMan.swift             | 29 ++++++++++---------
+ Source/CameraView/CameraView.swift            | 26 ++++++++---------
+ Source/Extensions/ConstraintsSetup.swift      | 20 ++++++-------
+ Source/Helper.swift                           |  6 ++--
+ Source/ImageGallery/ImageGalleryView.swift    |  4 +--
+ .../ImageGalleryViewDataSource.swift          |  2 +-
+ Source/ImagePickerController.swift            | 28 +++++++++---------
+ Source/TopView/TopView.swift                  | 20 ++++++-------
+ 13 files changed, 89 insertions(+), 84 deletions(-)
+
+diff --git a/ImagePicker.xcodeproj/project.pbxproj b/ImagePicker.xcodeproj/project.pbxproj
+index 3e1d97c..3073ba0 100644
+--- a/ImagePicker.xcodeproj/project.pbxproj
++++ b/ImagePicker.xcodeproj/project.pbxproj
+@@ -275,6 +275,9 @@
+ 						DevelopmentTeam = QQJ8AA32HJ;
+ 						LastSwiftMigration = 0800;
+ 					};
++					D5DC59941C201BE1003BD79B = {
++						DevelopmentTeam = QQJ8AA32HJ;
++					};
+ 				};
+ 			};
+ 			buildConfigurationList = D5DC59851C201BE1003BD79B /* Build configuration list for PBXProject "ImagePicker" */;
+@@ -282,6 +285,7 @@
+ 			developmentRegion = English;
+ 			hasScannedForEncodings = 0;
+ 			knownRegions = (
++				English,
+ 				en,
+ 			);
+ 			mainGroup = D5DC59811C201BE1003BD79B;
+@@ -488,7 +492,7 @@
+ 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePicker;
+ 				PRODUCT_NAME = ImagePicker;
+ 				SKIP_INSTALL = YES;
+-				SWIFT_VERSION = 3.0;
++				SWIFT_VERSION = 5.0;
+ 			};
+ 			name = Debug;
+ 		};
+@@ -508,7 +512,7 @@
+ 				PRODUCT_BUNDLE_IDENTIFIER = no.hyper.ImagePicker;
+ 				PRODUCT_NAME = ImagePicker;
+ 				SKIP_INSTALL = YES;
+-				SWIFT_VERSION = 3.0;
++				SWIFT_VERSION = 5.0;
+ 			};
+ 			name = Release;
+ 		};
+diff --git a/Source/AssetManager.swift b/Source/AssetManager.swift
+index 7b03ad2..f89bd3c 100644
+--- a/Source/AssetManager.swift
++++ b/Source/AssetManager.swift
+@@ -22,7 +22,7 @@ fileprivate func > <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
+ }
+ open class AssetManager {
+ 
+-  open static func getImage(_ name: String) -> UIImage {
++  public static func getImage(_ name: String) -> UIImage {
+     let traitCollection = UITraitCollection(displayScale: 3)
+     var bundle = Bundle(for: AssetManager.self)
+ 
+@@ -33,7 +33,7 @@ open class AssetManager {
+     return UIImage(named: name, in: bundle, compatibleWith: traitCollection) ?? UIImage()
+   }
+ 
+-  open static func fetch(_ completion: @escaping (_ assets: [PHAsset]) -> Void) {
++  public static func fetch(_ completion: @escaping (_ assets: [PHAsset]) -> Void) {
+     let fetchOptions = PHFetchOptions()
+     let authorizationStatus = PHPhotoLibrary.authorizationStatus()
+     var fetchResult: PHFetchResult<PHAsset>?
+@@ -56,7 +56,7 @@ open class AssetManager {
+     }
+   }
+ 
+-  open static func resolveAsset(_ asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping (_ image: UIImage?) -> Void) {
++  public static func resolveAsset(_ asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), completion: @escaping (_ image: UIImage?) -> Void) {
+     let imageManager = PHImageManager.default()
+     let requestOptions = PHImageRequestOptions()
+     requestOptions.deliveryMode = .highQualityFormat
+@@ -70,7 +70,7 @@ open class AssetManager {
+     }
+   }
+ 
+-  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280)) -> [UIImage] {
++  public static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280)) -> [UIImage] {
+     let imageManager = PHImageManager.default()
+     let requestOptions = PHImageRequestOptions()
+     requestOptions.isSynchronous = true
+@@ -86,7 +86,7 @@ open class AssetManager {
+     return images
+   }
+   
+-  open static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), isNetworkAccessAllowed: Bool = false,
++  public static func resolveAssets(_ assets: [PHAsset], size: CGSize = CGSize(width: 720, height: 1280), isNetworkAccessAllowed: Bool = false,
+                                  onBeginLoading: @escaping (_ asset: PHAsset) -> Void,
+                                  onCompleted: @escaping (_ images: [UIImage]) -> Void) {
+     
+diff --git a/Source/BottomView/BottomContainerView.swift b/Source/BottomView/BottomContainerView.swift
+index ef59ca1..4668f26 100644
+--- a/Source/BottomView/BottomContainerView.swift
++++ b/Source/BottomView/BottomContainerView.swift
+@@ -16,7 +16,7 @@ open class BottomContainerView: UIView {
+ 
+   lazy var pickerButton: ButtonPicker = { [unowned self] in
+     let pickerButton = ButtonPicker()
+-    pickerButton.setTitleColor(UIColor.white, for: UIControlState())
++    pickerButton.setTitleColor(UIColor.white, for: .normal)
+     pickerButton.delegate = self
+ 
+     return pickerButton
+@@ -34,7 +34,7 @@ open class BottomContainerView: UIView {
+ 
+   open lazy var doneButton: UIButton = { [unowned self] in
+     let button = UIButton()
+-    button.setTitle(Configuration.cancelButtonTitle, for: UIControlState())
++    button.setTitle(Configuration.cancelButtonTitle, for: .normal)
+     button.titleLabel?.font = Configuration.doneButton
+     button.addTarget(self, action: #selector(doneButtonDidPress(_:)), for: .touchUpInside)
+ 
+@@ -83,7 +83,7 @@ open class BottomContainerView: UIView {
+ 
+   // MARK: - Action methods
+ 
+-  func doneButtonDidPress(_ button: UIButton) {
++  @objc func doneButtonDidPress(_ button: UIButton) {
+     if button.currentTitle == Configuration.cancelButtonTitle {
+       delegate?.cancelButtonDidPress()
+     } else {
+@@ -91,7 +91,7 @@ open class BottomContainerView: UIView {
+     }
+   }
+ 
+-  func handleTapGestureRecognizer(_ recognizer: UITapGestureRecognizer) {
++  @objc func handleTapGestureRecognizer(_ recognizer: UITapGestureRecognizer) {
+     delegate?.imageStackViewDidPress()
+   }
+ 
+@@ -101,7 +101,7 @@ open class BottomContainerView: UIView {
+     UIView.animate(withDuration: 0.3, animations: {
+       imageView.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
+       }, completion: { _ in
+-        UIView.animate(withDuration: 0.2, animations: { _ in
++        UIView.animate(withDuration: 0.2, animations: {
+           imageView.transform = CGAffineTransform.identity
+         })
+     })
+diff --git a/Source/BottomView/ButtonPicker.swift b/Source/BottomView/ButtonPicker.swift
+index 2531855..eee93b7 100644
+--- a/Source/BottomView/ButtonPicker.swift
++++ b/Source/BottomView/ButtonPicker.swift
+@@ -72,19 +72,19 @@ class ButtonPicker: UIButton {
+ 
+   // MARK: - Actions
+ 
+-  func recalculatePhotosCount(_ notification: Notification) {
++  @objc func recalculatePhotosCount(_ notification: Notification) {
+     guard let sender = notification.object as? ImageStack else { return }
+     numberLabel.text = sender.assets.isEmpty ? "" : String(sender.assets.count)
+   }
+ 
+-  func pickerButtonDidPress(_ button: UIButton) {
++  @objc func pickerButtonDidPress(_ button: UIButton) {
+     backgroundColor = UIColor.white
+     numberLabel.textColor = UIColor.black
+     numberLabel.sizeToFit()
+     delegate?.buttonDidPress()
+   }
+ 
+-  func pickerButtonDidHighlight(_ button: UIButton) {
++  @objc func pickerButtonDidHighlight(_ button: UIButton) {
+     numberLabel.textColor = UIColor.white
+     backgroundColor = UIColor(red:0.3, green:0.3, blue:0.3, alpha:1)
+   }
+diff --git a/Source/BottomView/StackView.swift b/Source/BottomView/StackView.swift
+index 71b7ed4..5eaeb99 100644
+--- a/Source/BottomView/StackView.swift
++++ b/Source/BottomView/StackView.swift
+@@ -105,7 +105,7 @@ class ImageStackView: UIView {
+ 
+ extension ImageStackView {
+ 
+-  func imageDidPush(_ notification: Notification) {
++  @objc func imageDidPush(_ notification: Notification) {
+     let emptyView = views.filter { $0.image == nil }.first
+ 
+     if let emptyView = emptyView {
+@@ -118,7 +118,7 @@ extension ImageStackView {
+     }
+   }
+ 
+-  func imageStackDidChangeContent(_ notification: Notification) {
++  @objc func imageStackDidChangeContent(_ notification: Notification) {
+     if let sender = notification.object as? ImageStack {
+       renderViews(sender.assets)
+       activityView.stopAnimating()
+diff --git a/Source/CameraView/CameraMan.swift b/Source/CameraView/CameraMan.swift
+index 05b4524..c4a2709 100644
+--- a/Source/CameraView/CameraMan.swift
++++ b/Source/CameraView/CameraMan.swift
+@@ -33,10 +33,10 @@ class CameraMan {
+   func setupDevices() {
+     // Input
+     AVCaptureDevice
+-    .devices().flatMap {
+-      return $0 as? AVCaptureDevice
++    .devices().compactMap {
++      return $0
+     }.filter {
+-      return $0.hasMediaType(AVMediaTypeVideo)
++      return $0.hasMediaType(AVMediaType.video)
+     }.forEach {
+       switch $0.position {
+       case .front:
+@@ -68,7 +68,7 @@ class CameraMan {
+   // MARK: - Permission
+ 
+   func checkPermission() {
+-    let status = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
++    let status = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
+ 
+     switch status {
+     case .authorized:
+@@ -81,7 +81,7 @@ class CameraMan {
+   }
+ 
+   func requestPermission() {
+-    AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { granted in
++    AVCaptureDevice.requestAccess(for: AVMediaType.video) { granted in
+       DispatchQueue.main.async {
+         if granted {
+           self.start()
+@@ -151,7 +151,7 @@ class CameraMan {
+   }
+ 
+   func takePhoto(_ previewLayer: AVCaptureVideoPreviewLayer, location: CLLocation?, completion: (() -> Void)? = nil) {
+-    guard let connection = stillImageOutput?.connection(withMediaType: AVMediaTypeVideo) else { return }
++    guard let connection = stillImageOutput?.connection(with: AVMediaType.video) else { return }
+ 
+     connection.videoOrientation = Helper.videoOrientation()
+ 
+@@ -179,14 +179,14 @@ class CameraMan {
+       let request = PHAssetChangeRequest.creationRequestForAsset(from: image)
+       request.creationDate = Date()
+       request.location = location
+-      }, completionHandler: { _ in
++      }, completionHandler: { (_,_) in
+         DispatchQueue.main.async {
+           completion?()
+         }
+     })
+   }
+ 
+-  func flash(_ mode: AVCaptureFlashMode) {
++  func flash(_ mode: AVCaptureDevice.FlashMode) {
+     guard let device = currentInput?.device, device.isFlashModeSupported(mode) else { return }
+ 
+     queue.async {
+@@ -197,7 +197,7 @@ class CameraMan {
+   }
+ 
+   func focus(_ point: CGPoint) {
+-    guard let device = currentInput?.device, device.isFocusModeSupported(AVCaptureFocusMode.locked) else { return }
++    guard let device = currentInput?.device, device.isFocusModeSupported(AVCaptureDevice.FocusMode.locked) else { return }
+ 
+     queue.async {
+       self.lock {
+@@ -226,8 +226,9 @@ class CameraMan {
+ 
+   func configurePreset(_ input: AVCaptureDeviceInput) {
+     for asset in preferredPresets() {
+-      if input.device.supportsAVCaptureSessionPreset(asset) && self.session.canSetSessionPreset(asset) {
+-        self.session.sessionPreset = asset
++      if input.device.supportsSessionPreset(AVCaptureSession.Preset(rawValue: asset)) &&
++        self.session.canSetSessionPreset(AVCaptureSession.Preset(rawValue: asset)) {
++        self.session.sessionPreset = AVCaptureSession.Preset(rawValue: asset)
+         return
+       }
+     }
+@@ -235,9 +236,9 @@ class CameraMan {
+ 
+   func preferredPresets() -> [String] {
+     return [
+-      AVCaptureSessionPresetHigh,
+-      AVCaptureSessionPresetMedium,
+-      AVCaptureSessionPresetLow
++      AVCaptureSession.Preset.high.rawValue,
++      AVCaptureSession.Preset.medium.rawValue,
++      AVCaptureSession.Preset.low.rawValue
+     ]
+   }
+ }
+diff --git a/Source/CameraView/CameraView.swift b/Source/CameraView/CameraView.swift
+index 2d0e451..4050279 100644
+--- a/Source/CameraView/CameraView.swift
++++ b/Source/CameraView/CameraView.swift
+@@ -57,11 +57,11 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+     let button = UIButton(type: .system)
+     let title = NSAttributedString(string: Configuration.settingsTitle,
+       attributes: [
+-        NSFontAttributeName : Configuration.settingsFont,
+-        NSForegroundColorAttributeName : Configuration.settingsColor,
++        NSAttributedString.Key.font : Configuration.settingsFont,
++        NSAttributedString.Key.foregroundColor : Configuration.settingsColor,
+       ])
+ 
+-    button.setAttributedTitle(title, for: UIControlState())
++    button.setAttributedTitle(title, for: .normal)
+     button.contentEdgeInsets = UIEdgeInsets(top: 5.0, left: 10.0, bottom: 5.0, right: 10.0)
+     button.sizeToFit()
+     button.layer.borderColor = Configuration.settingsColor.cgColor
+@@ -112,7 +112,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+   override func viewDidAppear(_ animated: Bool) {
+     super.viewDidAppear(animated)
+ 
+-    previewLayer?.connection.videoOrientation = .portrait
++    previewLayer?.connection?.videoOrientation = .portrait
+     locationManager?.startUpdatingLocation()
+   }
+ 
+@@ -122,11 +122,11 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+   }
+ 
+   func setupPreviewLayer() {
+-    guard let layer = AVCaptureVideoPreviewLayer(session: cameraMan.session) else { return }
++    let layer = AVCaptureVideoPreviewLayer(session: cameraMan.session)
+ 
+     layer.backgroundColor = Configuration.mainColor.cgColor
+     layer.autoreverses = true
+-    layer.videoGravity = AVLayerVideoGravityResizeAspectFill
++    layer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+ 
+     view.layer.insertSublayer(layer, at: 0)
+     layer.frame = view.layer.frame
+@@ -155,9 +155,9 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+ 
+   // MARK: - Actions
+ 
+-  func settingsButtonDidTap() {
++  @objc func settingsButtonDidTap() {
+     DispatchQueue.main.async {
+-      if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
++      if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+         UIApplication.shared.openURL(settingsURL)
+       }
+     }
+@@ -166,7 +166,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+   // MARK: - Camera actions
+ 
+   func rotateCamera() {
+-    UIView.animate(withDuration: 0.3, animations: { _ in
++    UIView.animate(withDuration: 0.3, animations: {
+       self.containerView.alpha = 1
+       }, completion: { _ in
+         self.cameraMan.switchCamera {
+@@ -178,7 +178,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+   }
+ 
+   func flashCamera(_ title: String) {
+-    let mapping: [String: AVCaptureFlashMode] = [
++    let mapping: [String: AVCaptureDevice.FlashMode] = [
+       "ON": .on,
+       "OFF": .off
+     ]
+@@ -205,7 +205,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+ 
+   // MARK: - Timer methods
+ 
+-  func timerDidFire() {
++  @objc func timerDidFire() {
+     UIView.animate(withDuration: 0.3, animations: { [unowned self] in
+       self.focusImageView.alpha = 0
+       }, completion: { _ in
+@@ -222,7 +222,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+     cameraMan.focus(convertedPoint)
+ 
+     focusImageView.center = point
+-    UIView.animate(withDuration: 0.5, animations: { _ in
++    UIView.animate(withDuration: 0.5, animations: {
+       self.focusImageView.alpha = 1
+       self.focusImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
+       }, completion: { _ in
+@@ -233,7 +233,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
+ 
+   // MARK: - Tap
+ 
+-  func tapGestureRecognizerHandler(_ gesture: UITapGestureRecognizer) {
++  @objc func tapGestureRecognizerHandler(_ gesture: UITapGestureRecognizer) {
+     let touch = gesture.location(in: view)
+ 
+     focusImageView.transform = CGAffineTransform.identity
+diff --git a/Source/Extensions/ConstraintsSetup.swift b/Source/Extensions/ConstraintsSetup.swift
+index 993c5b8..e8f774e 100644
+--- a/Source/Extensions/ConstraintsSetup.swift
++++ b/Source/Extensions/ConstraintsSetup.swift
+@@ -6,7 +6,7 @@ extension BottomContainerView {
+ 
+   func setupConstraints() {
+ 
+-    for attribute: NSLayoutAttribute in [.centerX, .centerY] {
++    for attribute: NSLayoutConstraint.Attribute in [.centerX, .centerY] {
+       addConstraint(NSLayoutConstraint(item: pickerButton, attribute: attribute,
+         relatedBy: .equal, toItem: self, attribute: attribute,
+         multiplier: 1, constant: 0))
+@@ -16,13 +16,13 @@ extension BottomContainerView {
+         multiplier: 1, constant: 0))
+     }
+ 
+-    for attribute: NSLayoutAttribute in [.width, .left, .top] {
++    for attribute: NSLayoutConstraint.Attribute in [.width, .left, .top] {
+       addConstraint(NSLayoutConstraint(item: topSeparator, attribute: attribute,
+         relatedBy: .equal, toItem: self, attribute: attribute,
+         multiplier: 1, constant: 0))
+     }
+ 
+-    for attribute: NSLayoutAttribute in [.width, .height] {
++    for attribute: NSLayoutConstraint.Attribute in [.width, .height] {
+       addConstraint(NSLayoutConstraint(item: pickerButton, attribute: attribute,
+         relatedBy: .equal, toItem: nil, attribute: .notAnAttribute,
+         multiplier: 1, constant: ButtonPicker.Dimensions.buttonSize))
+@@ -100,8 +100,8 @@ extension TopView {
+ extension ImagePickerController {
+ 
+   func setupConstraints() {
+-    let attributes: [NSLayoutAttribute] = [.bottom, .right, .width]
+-    let topViewAttributes: [NSLayoutAttribute] = [.left, .top, .width]
++    let attributes: [NSLayoutConstraint.Attribute] = [.bottom, .right, .width]
++    let topViewAttributes: [NSLayoutConstraint.Attribute] = [.left, .top, .width]
+ 
+     for attribute in attributes {
+       view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: attribute,
+@@ -109,8 +109,8 @@ extension ImagePickerController {
+         multiplier: 1, constant: 0))
+     }
+ 
+-    for attribute: NSLayoutAttribute in [.left, .top, .width] {
+-      view.addConstraint(NSLayoutConstraint(item: cameraController.view, attribute: attribute,
++    for attribute: NSLayoutConstraint.Attribute in [.left, .top, .width] {
++      view.addConstraint(NSLayoutConstraint(item: cameraController.view!, attribute: attribute,
+         relatedBy: .equal, toItem: view, attribute: attribute,
+         multiplier: 1, constant: 0))
+     }
+@@ -129,7 +129,7 @@ extension ImagePickerController {
+       relatedBy: .equal, toItem: nil, attribute: .notAnAttribute,
+       multiplier: 1, constant: TopView.Dimensions.height))
+ 
+-    view.addConstraint(NSLayoutConstraint(item: cameraController.view, attribute: .height,
++    view.addConstraint(NSLayoutConstraint(item: cameraController.view!, attribute: .height,
+       relatedBy: .equal, toItem: view, attribute: .height,
+       multiplier: 1, constant: -BottomContainerView.Dimensions.height))
+   }
+@@ -139,7 +139,7 @@ extension ImageGalleryViewCell {
+ 
+   func setupConstraints() {
+ 
+-    for attribute: NSLayoutAttribute in [.width, .height, .centerX, .centerY] {
++    for attribute: NSLayoutConstraint.Attribute in [.width, .height, .centerX, .centerY] {
+       addConstraint(NSLayoutConstraint(item: imageView, attribute: attribute,
+         relatedBy: .equal, toItem: self, attribute: attribute,
+         multiplier: 1, constant: 0))
+@@ -154,7 +154,7 @@ extension ImageGalleryViewCell {
+ extension ButtonPicker {
+ 
+   func setupConstraints() {
+-    let attributes: [NSLayoutAttribute] = [.centerX, .centerY]
++    let attributes: [NSLayoutConstraint.Attribute] = [.centerX, .centerY]
+ 
+     for attribute in attributes {
+       addConstraint(NSLayoutConstraint(item: numberLabel, attribute: attribute,
+diff --git a/Source/Helper.swift b/Source/Helper.swift
+index edb50eb..c5eef51 100644
+--- a/Source/Helper.swift
++++ b/Source/Helper.swift
+@@ -6,11 +6,11 @@ struct Helper {
+   static func rotationTransform() -> CGAffineTransform {
+     switch UIDevice.current.orientation {
+     case .landscapeLeft:
+-      return CGAffineTransform(rotationAngle: CGFloat(M_PI_2))
++      return CGAffineTransform(rotationAngle: CGFloat(Double.pi / 2))
+     case .landscapeRight:
+-      return CGAffineTransform(rotationAngle: CGFloat(-M_PI_2))
++      return CGAffineTransform(rotationAngle: CGFloat(-Double.pi / 2))
+     case .portraitUpsideDown:
+-      return CGAffineTransform(rotationAngle: CGFloat(M_PI))
++      return CGAffineTransform(rotationAngle: CGFloat(Double.pi))
+     default:
+       return CGAffineTransform.identity
+     }
+diff --git a/Source/ImageGallery/ImageGalleryView.swift b/Source/ImageGallery/ImageGalleryView.swift
+index fead2bc..be98be2 100644
+--- a/Source/ImageGallery/ImageGalleryView.swift
++++ b/Source/ImageGallery/ImageGalleryView.swift
+@@ -158,7 +158,7 @@ open class ImageGalleryView: UIView {
+ 
+   // MARK: - Pan gesture recognizer
+ 
+-  func handlePanGestureRecognizer(_ gesture: UIPanGestureRecognizer) {
++  @objc func handlePanGestureRecognizer(_ gesture: UIPanGestureRecognizer) {
+     guard let superview = superview else { return }
+ 
+     let translation = gesture.translation(in: superview)
+@@ -234,7 +234,7 @@ extension ImageGalleryView: UICollectionViewDelegate {
+       } else if self.imageLimit == 0 || self.imageLimit > self.selectedStack.assets.count {
+         cell.selectedImageView.image = AssetManager.getImage("selectedImageGallery")
+         cell.selectedImageView.transform = CGAffineTransform(scaleX: 0, y: 0)
+-        UIView.animate(withDuration: 0.2, animations: { _ in
++        UIView.animate(withDuration: 0.2, animations: {
+           cell.selectedImageView.transform = CGAffineTransform.identity
+         })
+         self.selectedStack.pushAsset(asset)
+diff --git a/Source/ImageGallery/ImageGalleryViewDataSource.swift b/Source/ImageGallery/ImageGalleryViewDataSource.swift
+index ca712c7..07b510a 100644
+--- a/Source/ImageGallery/ImageGalleryViewDataSource.swift
++++ b/Source/ImageGallery/ImageGalleryViewDataSource.swift
+@@ -24,7 +24,7 @@ extension ImageGalleryView: UICollectionViewDataSource {
+         if (indexPath as NSIndexPath).row == 0 && self.shouldTransform {
+           cell.transform = CGAffineTransform(scaleX: 0, y: 0)
+ 
+-          UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: UIViewAnimationOptions(), animations: {
++          UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: UIView.AnimationOptions(), animations: {
+             cell.transform = CGAffineTransform.identity
+             }) { _ in }
+ 
+diff --git a/Source/ImagePickerController.swift b/Source/ImagePickerController.swift
+index 58bcc02..97cabb1 100644
+--- a/Source/ImagePickerController.swift
++++ b/Source/ImagePickerController.swift
+@@ -85,7 +85,7 @@ open class ImagePickerController: UIViewController {
+     
+     let progressIndicator = UIActivityIndicatorView()
+     progressIndicator.color = .white
+-    progressIndicator.activityIndicatorViewStyle = .whiteLarge
++    progressIndicator.style = .whiteLarge
+     progressIndicator.startAnimating()
+     
+     let progressConainer = UIView()
+@@ -138,7 +138,7 @@ open class ImagePickerController: UIViewController {
+   open var doneButtonTitle: String? {
+     didSet {
+       if let doneButtonTitle = doneButtonTitle {
+-        bottomContainer.doneButton.setTitle(doneButtonTitle, for: UIControlState())
++        bottomContainer.doneButton.setTitle(doneButtonTitle, for: .normal)
+       }
+     }
+   }
+@@ -154,9 +154,9 @@ open class ImagePickerController: UIViewController {
+     }
+ 
+     view.addSubview(volumeView)
+-    view.sendSubview(toBack: volumeView)
++    view.sendSubviewToBack(volumeView)
+     view.addSubview(progressOverlayView)
+-    view.bringSubview(toFront: progressOverlayView)
++    view.bringSubviewToFront(progressOverlayView)
+ 
+     view.backgroundColor = UIColor.white
+     view.backgroundColor = Configuration.mainColor
+@@ -226,7 +226,7 @@ open class ImagePickerController: UIViewController {
+     let alertController = UIAlertController(title: Configuration.requestPermissionTitle, message: Configuration.requestPermissionMessage, preferredStyle: .alert)
+ 
+     let alertAction = UIAlertAction(title: Configuration.OKButtonTitle, style: .default) { _ in
+-      if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
++      if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+         UIApplication.shared.openURL(settingsURL)
+       }
+     }
+@@ -281,17 +281,17 @@ open class ImagePickerController: UIViewController {
+ 
+     NotificationCenter.default.addObserver(self,
+       selector: #selector(handleRotation(_:)),
+-      name: NSNotification.Name.UIDeviceOrientationDidChange,
++      name:  UIDevice.orientationDidChangeNotification,
+       object: nil)
+   }
+ 
+-  func didReloadAssets(_ notification: Notification) {
++  @objc func didReloadAssets(_ notification: Notification) {
+     adjustButtonTitle(notification)
+     galleryView.collectionView.reloadData()
+     galleryView.collectionView.setContentOffset(CGPoint.zero, animated: false)
+   }
+ 
+-  func volumeChanged(_ notification: Notification) {
++  @objc func volumeChanged(_ notification: Notification) {
+     guard let slider = volumeView.subviews.filter({ $0 is UISlider }).first as? UISlider,
+       let userInfo = (notification as NSNotification).userInfo,
+       let changeReason = userInfo["AVSystemController_AudioVolumeChangeReasonNotificationParameter"] as? String, changeReason == "ExplicitVolumeChange" else { return }
+@@ -300,12 +300,12 @@ open class ImagePickerController: UIViewController {
+     takePicture()
+   }
+ 
+-  func adjustButtonTitle(_ notification: Notification) {
++  @objc func adjustButtonTitle(_ notification: Notification) {
+     guard let sender = notification.object as? ImageStack else { return }
+ 
+     let title = !sender.assets.isEmpty ?
+       Configuration.doneButtonTitle : Configuration.cancelButtonTitle
+-    bottomContainer.doneButton.setTitle(title, for: UIControlState())
++    bottomContainer.doneButton.setTitle(title, for: .normal)
+   }
+ 
+   // MARK: - Helpers
+@@ -370,7 +370,7 @@ open class ImagePickerController: UIViewController {
+     isTakingPicture = true
+     bottomContainer.pickerButton.isEnabled = false
+     bottomContainer.stackView.startLoader()
+-    let action: (Void) -> Void = { [unowned self] in
++    let action: () -> Void = { [unowned self] in
+       self.cameraController.takePicture { self.isTakingPicture = false }
+     }
+ 
+@@ -464,7 +464,7 @@ extension ImagePickerController: CameraViewDelegate {
+     return .portrait
+   }
+ 
+-  public func handleRotation(_ note: Notification) {
++  @objc public func handleRotation(_ note: Notification) {
+     let rotate = Helper.rotationTransform()
+ 
+     UIView.animate(withDuration: 0.25, animations: {
+@@ -513,7 +513,7 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
+     if let contentOffset = initialContentOffset { numberOfCells = Int(contentOffset.x / collectionSize.width) }
+   }
+ 
+-  func panGestureRecognizerHandler(_ gesture: UIPanGestureRecognizer) {
++  @objc func panGestureRecognizerHandler(_ gesture: UIPanGestureRecognizer) {
+     let translation = gesture.translation(in: view)
+     let velocity = gesture.velocity(in: view)
+ 
+@@ -541,7 +541,7 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
+       galleryView.frame.origin.y = initialFrame.origin.y + translation.y
+       galleryView.frame.size.height = initialFrame.height - translation.y
+ 
+-      let value = view.frame.width * (scale - 1) / scale
++//      let value = view.frame.width * (scale - 1) / scale
+ //      galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
+     } else {
+       galleryView.frame.origin.y = initialFrame.origin.y + translation.y
+diff --git a/Source/TopView/TopView.swift b/Source/TopView/TopView.swift
+index 89b83dd..c84bc23 100644
+--- a/Source/TopView/TopView.swift
++++ b/Source/TopView/TopView.swift
+@@ -19,10 +19,10 @@ class TopView: UIView {
+ 
+   lazy var flashButton: UIButton = { [unowned self] in
+     let button = UIButton()
+-    button.setImage(AssetManager.getImage("AUTO"), for: UIControlState())
+-    button.setTitle("AUTO", for: UIControlState())
++    button.setImage(AssetManager.getImage("AUTO"), for: .normal)
++    button.setTitle("AUTO", for: .normal)
+     button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 0)
+-    button.setTitleColor(UIColor.white, for: UIControlState())
++    button.setTitleColor(UIColor.white, for: .normal)
+     button.setTitleColor(UIColor.white, for: .highlighted)
+     button.titleLabel?.font = Configuration.flashButton
+     button.addTarget(self, action: #selector(flashButtonDidPress(_:)), for: .touchUpInside)
+@@ -33,7 +33,7 @@ class TopView: UIView {
+ 
+   lazy var rotateCamera: UIButton = { [unowned self] in
+     let button = UIButton()
+-    button.setImage(AssetManager.getImage("cameraIcon"), for: UIControlState())
++    button.setImage(AssetManager.getImage("cameraIcon"), for: .normal)
+     button.addTarget(self, action: #selector(rotateCameraButtonDidPress(_:)), for: .touchUpInside)
+     button.imageView?.contentMode = .center
+ 
+@@ -71,28 +71,28 @@ class TopView: UIView {
+ 
+   // MARK: - Action methods
+ 
+-  func flashButtonDidPress(_ button: UIButton) {
++  @objc func flashButtonDidPress(_ button: UIButton) {
+     currentFlashIndex += 1
+     currentFlashIndex = currentFlashIndex % flashButtonTitles.count
+ 
+     switch currentFlashIndex {
+     case 1:
+-      button.setTitleColor(UIColor(red: 0.98, green: 0.98, blue: 0.45, alpha: 1), for: UIControlState())
++      button.setTitleColor(UIColor(red: 0.98, green: 0.98, blue: 0.45, alpha: 1), for: .normal)
+       button.setTitleColor(UIColor(red: 0.52, green: 0.52, blue: 0.24, alpha: 1), for: .highlighted)
+     default:
+-      button.setTitleColor(UIColor.white, for: UIControlState())
++      button.setTitleColor(UIColor.white, for: .normal)
+       button.setTitleColor(UIColor.white, for: .highlighted)
+     }
+ 
+     let newTitle = flashButtonTitles[currentFlashIndex]
+ 
+-    button.setImage(AssetManager.getImage(newTitle), for: UIControlState())
+-    button.setTitle(newTitle, for: UIControlState())
++    button.setImage(AssetManager.getImage(newTitle), for: .normal)
++    button.setTitle(newTitle, for: .normal)
+ 
+     delegate?.flashButtonDidPress(newTitle)
+   }
+ 
+-  func rotateCameraButtonDidPress(_ button: UIButton) {
++  @objc func rotateCameraButtonDidPress(_ button: UIButton) {
+     delegate?.rotateDeviceDidPress()
+   }
+ }
+-- 
+2.18.0
+
